@@ -1,0 +1,218 @@
+  //radio choose option
+        var GradePattern;
+        $(document).ready(function () {
+            $(".tblMarks").hide();
+            $(".GradPointtbl").hide();
+            $(".clsmarks").change(function () {
+                $(".tblMarks").show(600);
+                $(".GradPointtbl").hide(300);
+                GradePattern = $(this).val();
+
+
+            });
+        });
+        $(document).ready(function () {
+            $(".tblMarks").hide();
+            $(".GradPointtbl").hide();
+            $(".clsgrade").change(function () {
+                $('.GradPointtbl').show(600);
+                $(".tblMarks").hide(300);
+                GradePattern = $(this).val();
+
+
+            });
+        });
+
+        //TableMarks
+
+        var GradeName;
+        var GradeSetId;
+        localStorage.clear();
+        var permission = localStorage.getItem('new');
+        function funcGradeSet(GradeSetName, gsId) {
+            GradeName = GradeSetName;
+            GradeSetId = gsId;
+
+            if (permission != 'no') {
+                $('#title11 label').append('<h3 style="color:green;"><b>(' + GradeSetName + ')</b></h3>');
+
+            }
+
+        };
+        $(document).ready(function () {
+
+            var flag = false;
+            $('.btnAddMarks').click(function () {
+                flag = true;
+                var gname = $('.txtname').val();
+                var max = $('.txtmax').val();
+                var min = $('.txtmin').val();
+                var ohtml = "<tr class='active-check-row'><td>" + gname + "</td><td>" + max + "</td><td>" + min + "</td> <td><button type='button' class='btnDelete btn btn-danger'>Delete</button></td></tr > ";
+                $('#Markstbl tbody').append(ohtml);
+            });
+            $(document).on('click', 'button.btnDelete', function () {
+                $(this).closest('tr').remove();
+                return false;
+            });
+
+            //TableGrade
+            $('.btnAddGrade').click(function () {
+                flag = true;
+                var gname = $('.txtgname').val();
+                var gpoint = $('.txtgpoint').val();
+                var html = "<tr class='active-check-row'><td>" + gname + "</td><td>" + gpoint + "</td><td><button type='button' class='btnDelete btn btn-danger'>Delete</button></td></tr>";
+                $('#Gradetbl tbody').append(html);
+
+            });
+            $(document).on('click', 'button.btnDelete', function () {
+                $(this).closest('tr').remove();
+                return false;
+            });
+
+            // save  Grade Table 
+            
+            $('#btnGTsave').click(function () {
+                var otblModal = [];
+                if (flag == true) {
+                    
+                    if (GradePattern == 'gPoint') {
+                        $('#Gradetbl tbody .active-check-row').each(function () {
+                            var data = {
+                                'gsId':parseInt(GradeSetId),
+                                'GradePattern': GradePattern,
+                                'Grade': $(this).children(':nth-child(1)').text().trim(),
+                                'gPoint': parseInt($(this).children(':nth-child(2)').text().trim()),
+                                'MaxMarks': null,
+                                'MinMarks': null
+                            }
+                            otblModal.push(data);
+                        });
+                    }
+                    else {
+                        $('#Markstbl tbody .active-check-row').each(function () {
+                            var data = {
+
+                                'gsId': parseInt(GradeSetId),
+                                'GradePattern': GradePattern,
+                                'Grade': $(this).children(':nth-child(1)').text().trim(),
+                                'MaxMarks': parseInt($(this).children(':nth-child(2)').text().trim()),
+                                'MinMarks': parseInt($(this).children(':nth-child(3)').text().trim()),
+                                'gPoint': null
+                                
+                            }
+                            otblModal.push(data);
+                        });
+                    }
+
+                    console.log(otblModal)
+
+                    if (otblModal.length <= 0) {
+                        swal("Please Enter Grade Set Name.. ", "Error");
+                    } else {
+
+                        var otblModal = {
+                            'otblModal': otblModal,
+                        };
+                        $('.pre-loder').show();
+                        $.ajax({
+                            url: "/",
+                            dataType: 'json',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ 'oGModel': otblModal }),
+                            success: function (response) {
+                                swal('Grade table Added successfully').then((value) => {
+                                    window.location.reload();
+                                });
+                            },
+                            failure: function (response) {
+                                alert(response.d);
+                                $('.pre-loder').hide();
+                            },
+                            error: function (response) {
+                                alert(response.d);
+                                $('.pre-loder').hide();
+                            },
+                            complete: function () {
+                                $('.pre-loder').hide();
+                            }
+                        });
+                    };
+
+
+                } else {
+                    swal("Please Choose Option & Set Grades", "Error");
+
+                }
+
+            });
+
+
+
+
+
+
+
+            $('#btnModalCls').click(function () {
+                flag = false;
+                localStorage.setItem('new', 'no'); //store a key/value
+
+            });
+
+        });
+
+        // close  Grade Table 
+        $(document).ready(function () {
+
+
+
+        });
+
+
+
+
+    </script>
+     <button type="button" class="btnaddgrade fa fa-plus" id="LinkButton1" onclick="return funcGradeSet('<%#Eval("GradeSetName")%>','<%#Eval("gsId")%>');" data-dismiss="modal" data-toggle='modal' data-target="#CreateGrade"> Add Grade</button>
+                                                        
+                                                        
+
+    <%--    add new Grade Name  modal--%>
+    <div class="modal modal fade custom-model-box" id="AddGrade" tabindex="-1" role="dialog" aria-labelledby="title" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header text-center">
+                    <h4 class="modal-title text-bold" id="title"><b>Add New Grade Set</b> </h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    </button>
+                </div>
+                <hr />
+                <div class="modal-body ">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-11 col-md-offset-1">
+                                <div class="label-field-pair">
+                                    <label class="lbl" for="assessmentname">Grade Set Name<span style="color: red; font-weight: bolder;">*</span></label>
+                                    <div class="text-input-bg">
+                                        <input type="text" class="form-control" id="gradename" placeholder="Grade Set Name" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div>
+                        <hr />
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <div class="row">
+                            <div class="col-sm-6 text-left">
+                                <button type="button" class="btn btn-danger btn-lg" data-dismiss="modal" id="btnModalClose">Close</button>
+                            </div>
+                            <div class="col-sm-6 text-right">
+                                <button type="button" id="btnGradeSave" class="btn btn-primary btn-lg">Create</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
